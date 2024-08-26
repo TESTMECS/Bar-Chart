@@ -18,6 +18,7 @@ fetch(
       .select(".visHolder")
       .append("svg")
       .attr("width", width)
+
       .attr("height", height);
 
     // Update yScale domain to go from 0 to 18000
@@ -38,18 +39,29 @@ fetch(
     // Create axes
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
+    // Add multiple tick labels to x-axis
+    xAxis.ticks(d3.timeYear.every(5)).tickFormat(d3.timeFormat("%Y"));
+
+    // Add multiple tick labels to y-axis
+    yAxis.ticks(10).tickFormat((d) => `$${d3.format(",")(d)}`);
+
+    // Apply the 'tick' class to all tick labels
+    svg.selectAll(".tick text").attr("class", "tick");
 
     svg
       .append("g")
       .attr("transform", `translate(0, ${height - padding})`)
       .style("font-size", "14px")
+      .attr("id", "x-axis")
       .call(xAxis);
 
     svg
       .append("g")
       .attr("transform", `translate(${padding}, 0)`)
       .call(yAxis)
-      .style("font-size", "8px");
+      .style("font-family", "monospace")
+      .attr("id", "y-axis")
+      .style("font-size", "10px");
 
     // Create bars
     svg
@@ -59,6 +71,9 @@ fetch(
       .append("rect")
       .attr("x", (d) => xScale(new Date(d[0])))
       .attr("y", (d) => yScale(d[1]))
+      .attr("class", "bar")
+      .attr("data-date", (d) => d[0])
+      .attr("data-gdp", (d) => d[1])
       .attr("width", (width - 2 * padding) / dataset.length)
       .attr("height", (d) => height - padding - yScale(d[1]))
       .attr("fill", "steelblue")
@@ -87,7 +102,8 @@ fetch(
         const tooltip = d3
           .select(".visHolder")
           .append("div")
-          .attr("class", "tooltip")
+          .attr("id", "tooltip")
+          .attr("data-date", d[0])
           .style("position", "absolute")
           .style("background-color", "gray")
           .style("border", "1px solid #ddd")
@@ -118,6 +134,7 @@ fetch(
       .attr("text-anchor", "middle")
       .style("font-size", "24px")
       .style("font-weight", "bold")
+      .attr("id", "title")
 
       .text("United States GDP");
   })
